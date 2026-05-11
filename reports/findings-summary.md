@@ -231,6 +231,9 @@ Because OpenClinica stores sensitive clinical trial and healthcare data, exploit
 Upgrade ua-parser.min.js to a patched and supported version newer than:
 - 0.7.22
 
+## Git Leaks Scan Results
+No hardcoded secrets were detected in the OpenClinica codebase, indicating strong baseline credential hygiene.
+
 ## References
 - CWE-22: Path Traversal
 - OWASP Top 10: A05 – Security Misconfiguration / A01 – Broken Access Control
