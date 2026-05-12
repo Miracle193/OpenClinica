@@ -1,0 +1,34 @@
+name: AppSec Pipeline
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Pull repository code onto the runner
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # Install Python runtime
+      - name: Install Python
+        uses: actions/setup-python@v4
+
+      # Install semgrep
+      - name: Install Semgrep
+        run: pip install semgrep
+
+      # Run semgrep
+      - name: Run Semgrep
+        run: semgrep scan --config=auto .
+
+      # Install Gitleaks
+      - name: Install Gitleaks
+        run: sudo apt-get install -y gitleaks
+
+      # Run Gitleaks
+      - name: Run Gitleaks
+        run: gitleaks detect --source .
