@@ -58,7 +58,7 @@ jobs:
         # Run this step even if previous scans fail
         if: always()
 
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
 
         with:
           # Name shown in GitHub Actions artifacts section
