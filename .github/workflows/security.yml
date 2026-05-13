@@ -1,34 +1,68 @@
+# Name of the GitHub Actions workflow
 name: AppSec Pipeline
 
+# Define when the pipeline should run
 on:
+  # Run on every pull request
   pull_request:
+  
+  # Run on every push
   push:
 
 jobs:
+  # Security scanning job
   security:
+
+    # Use the latest Ubuntu runner
     runs-on: ubuntu-latest
 
     steps:
-      # Pull repository code onto the runner
+      # Step 1:  Pull repository code onto the runner
       - name: Checkout
         uses: actions/checkout@v3
 
-      # Install Python runtime
+      # Step 2: Install Python (required for Semgrep)
       - name: Install Python
         uses: actions/setup-python@v4
 
-      # Install semgrep
+      # Step 3: Install Semgrep SAST scanner
       - name: Install Semgrep
         run: pip install semgrep
 
-      # Run semgrep
-      - name: Run Semgrep
-        run: semgrep scan --config=auto .
+      # Step 4: Run Semgrep static analysis scan
+      - name: Run Semgrep Scan
+        run: |
+          semgrep scan \
+            --config=auto \                # Use Semgrep automatic ruleset
+            --error \                      # Fail pipeline if findings are detected
+            --json \                       # Export results in JSON format
+            --output reports/semgrep-report.json  # Save report to reports folder
 
-      # Install Gitleaks
+      # Step 5: Install Gitleaks for secrets scanning
       - name: Install Gitleaks
-        run: sudo apt-get install -y gitleaks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gitleaks
 
-      # Run Gitleaks
-      - name: Run Gitleaks
-        run: gitleaks detect --source .
+      # Step 6: Run Gitleaks secrets scan
+      - name: Run Gitleaks Scan
+        run: |
+          gitleaks detect \
+            --source . \                                  # Scan current repository
+            --report-format json \                        # Export report as JSON
+            --report-path reports/gitleaks-report.json \  # Save report
+            --exit-code 1  
+
+      # Step 7: Upload reports as downloadable artifacts
+      - name: Upload Security Reports
+        # Run this step even if previous scans fail
+        if: always()
+
+        uses: actions/upload-artifact@v3
+
+        with:
+          # Name shown in GitHub Actions artifacts section
+          name: security-reports
+
+          # Upload everything inside reports folder
+          path: reports/
