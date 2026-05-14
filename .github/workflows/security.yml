@@ -35,9 +35,9 @@ jobs:
       - name: Run Semgrep Scan
         run: |
           semgrep scan \
-            --config=auto \                # Use Semgrep automatic ruleset
-            --json \                       # Export results in JSON format
-            --output reports/semgrep-report.json  # Save report to reports folder
+            --config=auto \                       # Use semgrep automatic ruleset
+            --json \                              # Export results in JSON format
+            --output reports/semgrep-report.json  # Save reports to reports folder
 
       # Step 5: Upload Semgrep report
       - name: Upload Semgrep Report
@@ -77,9 +77,9 @@ jobs:
       # Step 3: Install OWASP Dependency Check
       - name: Install Dependency Check
         run: |
-          wget https://github.com/dependency-check/DependencyCheck/releases/latest
+          wget https://github.com/dependency-check/DependencyCheck/releases/download/v12.2.2/dependency-check-12.2.2-release.zip
 
-          unzip dependency-check-12.2.0-release.zip
+          unzip dependency-check-12.2.2-release.zip
 
       # Step 4: Run Dependency Check
       - name: Run Dependency Scan
@@ -128,7 +128,8 @@ jobs:
           gitleaks detect \
             --source . \                                  # Scan current repository
             --report-format json \                        # Export report as JSON
-            --report-path reports/gitleaks-report.json \  # Save report 
+            --report-path reports/gitleaks-report.json \  # Save report
+            --exit-code 1 
 
       # Step 3: Upload Gitleaks reports as downloadable artifacts
       - name: Upload Gitleaks Report
