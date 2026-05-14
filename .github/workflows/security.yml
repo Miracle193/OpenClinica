@@ -32,12 +32,15 @@ jobs:
         run: pip install semgrep
 
       # Step 4: Run Semgrep static analysis scan
+      # Use semgrep automatic ruleset
+      # Export results in JSON format
+      # Save reports to reports folder
       - name: Run Semgrep Scan
         run: |
-          semgrep scan \
-            --config=auto \                       # Use semgrep automatic ruleset
-            --json \                              # Export results in JSON format
-            --output reports/semgrep-report.json  # Save reports to reports folder
+          semgrep scan . \
+            --config=auto \
+            --json \
+            --output reports/semgrep-report.json
 
       # Step 5: Upload Semgrep report
       - name: Upload Semgrep Report
@@ -84,7 +87,7 @@ jobs:
       # Step 4: Run Dependency Check
       - name: Run Dependency Scan
         run: |
-          ./dependency-check/bin/dependency-check.sh
+          ./dependency-check/bin/dependency-check.sh \
           --scan . \
           --format JSON \
           --out reports/
