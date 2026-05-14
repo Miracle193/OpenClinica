@@ -90,7 +90,7 @@ jobs:
           ./dependency-check/bin/dependency-check.sh \
           --scan . \
           --format JSON \
-          --out reports/
+          --out reports \
           --nvdApiKey "${{ secrets.NVD_API_KEY }}"
 
       # Step 5: Upload Dependency report
