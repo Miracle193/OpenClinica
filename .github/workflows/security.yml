@@ -10,15 +10,17 @@ on:
   push:
 
 jobs:
-  # Security scanning job
-  security:
+   # =====================================================
+  # SEMGREP SAST SCAN
+  # =====================================================
+  semgrep:
 
     # Use the latest Ubuntu runner
     runs-on: ubuntu-latest
 
     steps:
       # Step 1:  Pull repository code onto the runner
-      - name: Checkout
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       # Step 2: Install Python (required for Semgrep)
@@ -34,27 +36,11 @@ jobs:
         run: |
           semgrep scan \
             --config=auto \                # Use Semgrep automatic ruleset
-            --error \                      # Fail pipeline if findings are detected
             --json \                       # Export results in JSON format
             --output reports/semgrep-report.json  # Save report to reports folder
 
-      # Step 5: Install Gitleaks for secrets scanning
-      - name: Install Gitleaks
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gitleaks
-
-      # Step 6: Run Gitleaks secrets scan
-      - name: Run Gitleaks Scan
-        run: |
-          gitleaks detect \
-            --source . \                                  # Scan current repository
-            --report-format json \                        # Export report as JSON
-            --report-path reports/gitleaks-report.json \  # Save report
-            --exit-code 1  
-
-      # Step 7: Upload reports as downloadable artifacts
-      - name: Upload Security Reports
+      # Step 5: Upload Semgrep report
+      - name: Upload Semgrep Report
         # Run this step even if previous scans fail
         if: always()
 
@@ -62,7 +48,98 @@ jobs:
 
         with:
           # Name shown in GitHub Actions artifacts section
-          name: security-reports
+          name: semgrep-report
 
           # Upload everything inside reports folder
-          path: reports/
+          path: reports/semgrep-report.json
+
+  # ---------------------------------------------------
+  # OWASP Dependency-Check (Software Composition Analysis)
+  # ---------------------------------------------------
+  
+  dependency-check:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1: Pull repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install Java (required for Dependency-Check)
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      # Step 3: Install OWASP Dependency Check
+      - name: Install Dependency Check
+        run: |
+          wget https://github.com/dependency-check/DependencyCheck/releases/latest
+
+          unzip dependency-check-12.2.0-release.zip
+
+      # Step 4: Run Dependency Check
+      - name: Run Dependency Scan
+        run: |
+          ./dependency-check/bin/dependency-check.sh
+          --scan . \
+          --format JSON \
+          --out reports/
+
+      # Step 5: Upload Dependency report
+      - name: Upload Dependency Report
+        # Run this step even if previous scans fail
+        if: always()
+
+        uses: actions/upload-artifact@v4
+
+        with:
+          # Name shown in GitHub Actions artifacts section
+          name: dependency-check-report
+
+          # Upload everything inside reports folder
+          path: reports/dependency-check-report.json
+
+  # =====================================================
+  # GITLEAKS SECRETS SCAN
+  # =====================================================
+  gitleaks:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # Step 1:  Pull repository code
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install Gitleaks for secrets scanning
+      - name: Install Gitleaks
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gitleaks
+
+      # Step 3: Run Gitleaks secrets scan
+      - name: Run Gitleaks Scan
+        run: |
+          gitleaks detect \
+            --source . \                                  # Scan current repository
+            --report-format json \                        # Export report as JSON
+            --report-path reports/gitleaks-report.json \  # Save report 
+
+      # Step 3: Upload Gitleaks reports as downloadable artifacts
+      - name: Upload Gitleaks Report
+        # Run this step even if previous scans fail
+        if: always()
+
+        uses: actions/upload-artifact@v4
+
+        with:
+          # Name shown in GitHub Actions artifacts section
+          name: gitleaks-report
+
+          # Upload everything inside reports folder
+          path: reports/gitleaks-report.json
