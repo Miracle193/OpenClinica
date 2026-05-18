@@ -27,3 +27,6 @@ ws/.DS_Store
 
 # netbeans
 nb-configuration.xml
+
+# other
+screenshots/github-actions-pipeline.png:Zone.Identifier

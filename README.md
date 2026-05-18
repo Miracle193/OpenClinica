@@ -31,7 +31,7 @@ Checkout ───────┼── Dependency Check
 
 ---
 
-# 🔧 Technologies & Tools Used
+# Technologies & Tools Used
 
 | Category                                   | Tool                     |
 | ------------------------------------------ | ------------------------ |
@@ -44,7 +44,7 @@ Checkout ───────┼── Dependency Check
 
 ---
 
-# 🔐 Security Scanning Implemented
+# Security Scanning Implemented
 
 ## 1. Static Application Security Testing (SAST)
 
@@ -62,6 +62,21 @@ semgrep scan --config=auto .
 semgrep scan --config=auto --json > semgrep-report.json
 ```
 
+To extract the findings with HIGH likehood, impact or confidence:
+
+```bash
+jq '
+  .results
+  | map(
+      select(
+        (.extra.metadata.likelihood // "") == "HIGH"
+        or (.extra.metadata.impact // "") == "HIGH"
+        or (.extra.metadata.confidence // "") == "HIGH"
+      )
+    )
+' semgrep-report.json > semgrep-high-findings.json
+```
+
 ---
 
 ## 2. Dependency Vulnerability Scanning (SCA)
@@ -71,7 +86,11 @@ Used OWASP Dependency-Check to identify vulnerable third-party libraries and kno
 ### Example Command
 
 ```bash
-dependency-check.sh --scan . --format HTML
+~/dependency-check/bin/dependency-check.sh \
+--scan . \
+--format HTML \
+--out dependency-check-report \
+--nvdApiKey YOUR_API_KEY
 ```
 
 ---
@@ -88,12 +107,15 @@ Implemented secrets detection using Gitleaks to detect:
 ### Example Command
 
 ```bash
-gitleaks detect --source . --report-format json --report-path gitleaks-report.json
+gitleaks detect \
+  --source . \
+  --report-format json \
+  --report-path gitleaks-report.json
 ```
 
 ---
 
-# ⚙️ CI/CD Pipeline
+# CI/CD Pipeline
 
 The security pipeline was integrated into GitHub Actions and configured to run automatically on:
 
@@ -120,9 +142,11 @@ OpenClinica/
 │       └── security.yml
 │
 ├── reports/
-│   ├── semgrep-report.json
-│   ├── dependency-check-report.html
-│   ├── gitleaks-report.json
+│   └── dependency-check-report/
+│       └── initial-dependency-check-report.html
+│   ├── initial-semgrep-report.json
+│   ├── semgrep-high-findings.json
+│   ├── initial-gitleaks-report.json
 │   └── findings-summary.md
 │
 ├── screenshots/
@@ -136,6 +160,8 @@ OpenClinica/
 ---
 
 # Findings Summary
+
+A summary of the findings can be found [here](reports/findings-summary.md).
 
 The security pipeline identified several categories of findings, including:
 
@@ -156,7 +182,13 @@ Findings were prioritized based on:
 # Screenshots
 
 ## GitHub Actions Pipeline
+![image3](screenshots/github-actions-pipeline.png)
 
+## Semgrep Findings
+![image1](screenshots/semgrep-findings.png)
+
+## Dependency Check Report
+![image2](screenshots/dependency-check-report.png)
 
 ---
 
